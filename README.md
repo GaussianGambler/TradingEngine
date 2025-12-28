@@ -22,7 +22,7 @@ This matching engine implements a complete order book with price-time priority m
 
 ## Performance Benchmarks
 
-Tested on MacBook Pro with Apple Silicon using Clang++ with -O3 optimization:
+Tested using Clang++ with -O3 optimization:
 
 | Test Scenario | Throughput | Description |
 |--------------|-----------|-------------|
