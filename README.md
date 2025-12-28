@@ -36,13 +36,10 @@ Tested on MacBook Pro with Apple Silicon using Clang++ with -O3 optimization:
 
 ### Core Components
 
-**Order Book**: Dual AVL tree structure maintaining separate buy/sell sides with additional trees for stop orders
-
-**Memory Manager**: Pre-allocated arena with free-lists for Orders and Limits, eliminating runtime allocations
-
-**Ring Buffer**: Lock-free SPSC queue (65,536 entries) for asynchronous trade reporting 
-
-**Order Generator**: Statistical order generation with configurable price distributions for realistic testing
+- **Order Book**: Dual AVL tree structure maintaining separate buy/sell sides with additional trees for stop orders
+- **Memory Manager**: Pre-allocated arena with free-lists for Orders and Limits, eliminating runtime allocations
+- **Ring Buffer**: Lock-free SPSC queue (65,536 entries) for asynchronous trade reporting
+- **Order Generator**: Statistical order generation with configurable price distributions for realistic testing
 
 ### Design Patterns
 
@@ -63,22 +60,23 @@ Tested on MacBook Pro with Apple Silicon using Clang++ with -O3 optimization:
 
 #### Quick Build
 
+```
 clang++ -std=c++23 -O3 -Wall -Wextra -pthread engine.cpp -o engine
 ./engine
-
+```
  
 
-#### With CMake
+#### With GCC
 
-mkdir build && cd build
-cmake -DCMAKE_BUILD_TYPE=Release ..
-make
-./matching_engine
-
+```
+g++ -std=c++23 -O3 -Wall -Wextra -pthread engine.cpp -o engine
+./engine
+```
  
 
 ### Usage Example
 
+```
 #include "matching_engine.h"
 
 // Initialize components
@@ -97,55 +95,103 @@ OrderType::Limit, // type
 );
 
 // Place a market sell order
-engine.processOrder(
-1002, Side::Sell, OrderType::Market, 50, 0, 0
-);
+engine.processOrder(1002, Side::Sell, OrderType::Market, 50, 0, 0);
 
 // Modify an existing order
 engine.modifyOrder(1001, 150, 29550);
 
 // Cancel an order
 engine.cancelOrder(1001);
+```
+ 
 
+## Code Structure
+```
+.
+├── engine.cpp # Main implementation
+├── README.md # This file
+└── LICENSE # MIT License
+```
+ 
 
 ## Benchmark Details
 
 ### Test 1: Statistical Orders
-Pre-seeds order book with 10,000 limit orders, then processes 1M orders with realistic distributions: 50% limit, 30% market, 10% stop, 10% stop-limit.
+
+Pre-seeds order book with 10,000 limit orders, then processes 1M orders with realistic distributions:
+- 50% limit orders
+- 30% market orders
+- 10% stop orders
+- 10% stop-limit orders
+
+**Result**: 5.45 Million TPS
 
 ### Test 2: Order Modifications
-Focuses on modify/cancel operations common in market-making strategies.
+
+Focuses on modify/cancel operations common in market-making strategies. Tests the performance of order book updates without matching.
+
+**Result**: 44.22 Million TPS
 
 ### Test 3: Mixed Workload
-Simulates production-like behavior with order placement, cancellations, and modifications.
+
+Simulates production-like behavior:
+- 75% new order placements
+- 15% cancellations
+- 10% modifications
+
+**Result**: 6.45 Million TPS
 
 ## Implementation Notes
 
 ### Stop Order Handling
 
-Stop orders are maintained in separate AVL trees and checked only once per matched order (not per trade) to avoid cascading performance degradation.
+Stop orders are maintained in separate AVL trees and checked only once per matched order (not per individual trade) to avoid cascading performance degradation.
 
 ### Memory Efficiency
 
-Pre-allocation eliminates heap fragmentation and provides predictable latency. Pool sizes are configurable based on expected order volume .
+Pre-allocation eliminates heap fragmentation and provides predictable latency. Pool sizes are configurable based on expected order volume:
+- Orders pool: 3x test size
+- Limits pool: 0.6x test size
 
 ### Thread Safety
 
-The matching engine is single-threaded (lock-free within matching logic). Trade reporting uses lock-free ring buffer for asynchronous consumption .
+The matching engine is single-threaded (lock-free within matching logic). Trade reporting uses a lock-free ring buffer for asynchronous consumption by a separate consumer thread.
 
 ## Limitations & Future Work
 
+Current limitations:
 - Single-threaded matching (parallelization requires careful design)
 - No persistence layer (in-memory only)
 - No network interface (local benchmarking only)
 - Basic order validation (no credit checks, position limits)
+- No market data dissemination
 
-**Planned enhancements**:
-- [ ] Unit test suite
-- [ ] FIX protocol adapter
-- [ ] Latency histogram metrics
-- [ ] Order book snapshots
-- [ ] Alternative data structures (B+ trees, skip lists)
+
+## Technical Details
+
+### Order Types
+
+**Market Order**: Executes immediately at best available price
+- Buy: price = INT64_MAX
+- Sell: price = 0
+
+**Limit Order**: Executes only at specified price or better
+- Rests in order book if not immediately matched
+
+**Stop Order**: Converts to market order when stop price is triggered
+- Buy Stop: triggers when price >= stop price
+- Sell Stop: triggers when price <= stop price
+
+**Stop-Limit Order**: Converts to limit order when stop price is triggered
+- Provides price protection after trigger
+
+### AVL Tree Operations
+
+The order book uses AVL trees for both sides (buy/sell) to maintain sorted price levels:
+- Insert: O(log n)
+- Delete: O(log n)
+- Find min/max: O(log n)
+- Height balanced: |left_height - right_height| <= 1
 
 ## Contributing
 
@@ -157,15 +203,11 @@ This is an educational/research project. Contributions welcome!
 4. Push to branch (`git push origin feature/enhancement`)
 5. Open a Pull Request
 
-## References
+Please ensure code follows existing style and includes appropriate comments.
 
-- [LMAX Disruptor Pattern](https://lmax-exchange.github.io/disruptor/)
-- [Matching Engine Design Patterns](https://blog.valensas.com/matching-engine-design)
-- [Lock-Free Programming](https://preshing.com/20120612/an-introduction-to-lock-free-programming/)
 
-## License
 
-MIT License - see LICENSE file for details
+
 
 
 
@@ -173,4 +215,6 @@ MIT License - see LICENSE file for details
 
 ---
 
-⚠️ **Disclaimer**: This is educational software. Not intended for production trading systems. Use at your own risk.
+⚠️ **Disclaimer**: This is educational software for research and learning purposes. Not intended for production trading systems. No warranty provided. Use at your own risk.
+
+**Star this repo if you find it useful!** ⭐
