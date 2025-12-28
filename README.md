@@ -66,7 +66,7 @@ Tested on MacBook Pro with Apple Silicon using Clang++ with -O3 optimization:
 clang++ -std=c++23 -O3 -Wall -Wextra -pthread engine.cpp -o engine
 ./engine
 
-text
+ 
 
 #### With CMake
 
@@ -75,7 +75,7 @@ cmake -DCMAKE_BUILD_TYPE=Release ..
 make
 ./matching_engine
 
-text
+ 
 
 ### Usage Example
 
@@ -107,21 +107,6 @@ engine.modifyOrder(1001, 150, 29550);
 // Cancel an order
 engine.cancelOrder(1001);
 
-text
-
-## Code Structure
-
-.
-├── engine.cpp # Main implementation
-├── README.md # This file
-├── docs/
-│ ├── architecture.md # Detailed architecture documentation
-│ ├── benchmarks.md # Extended benchmark results
-│ └── api.md # API reference
-└── tests/
-└── unit_tests.cpp # Unit tests (TODO)
-
-text
 
 ## Benchmark Details
 
