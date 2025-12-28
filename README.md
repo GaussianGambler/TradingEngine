@@ -1,6 +1,6 @@
 # High-Performance Order Matching Engine
 
-A low-latency, high-throughput order matching engine written in C++ achieving **5-44 million transactions per second** with support for limit orders, market orders, stop orders, and stop-limit orders.
+A low-latency, high-throughput order matching engine written in C++ achieving **5–44 million engine operations per second** with support for limit orders, market orders, stop orders, and stop-limit orders.
 
 ![C++](https://img.shields.io/badge/C%2B%2B-23-blue.svg)
 ![License](https://img.shields.io/badge/license-MIT-green.svg)
@@ -12,8 +12,7 @@ This matching engine implements a complete order book with price-time priority m
 
 ### Key Features
 
-- **Ultra-low latency**: ~180ns per order modification, ~730ns per mixed operation
-- **High throughput**: 5.4M TPS (complex matching) to 44M TPS (modifications)
+- **High performance**: 5.4M–44M engine operations per second (benchmarked with Clang -O3)
 - **Complete order types**: Market, Limit, Stop, and Stop-Limit orders
 - **Lock-free design**: Lock-free ring buffer for trade reporting
 - **Custom memory management**: Arena allocator eliminates heap allocation overhead
@@ -22,7 +21,7 @@ This matching engine implements a complete order book with price-time priority m
 
 ## Performance Benchmarks
 
-Tested using Clang++ with -O3 optimization:
+**Benchmark environment**: Apple MacBook Pro M2, macOS 14.2, Clang++ 15, -O3
 
 | Test Scenario | Throughput | Description |
 |--------------|-----------|-------------|
@@ -31,6 +30,40 @@ Tested using Clang++ with -O3 optimization:
 | Mixed Workload | 6.44M TPS | 75% orders, 15% cancels, 10% modifies |
 
 **Total trades executed**: 1,511,505 across 3M operations
+# High-Performance Order Matching Engine
+
+A low-latency, high-throughput order matching engine written in C++ achieving **5–44 million engine operations per second** with support for limit orders, market orders, stop orders, and stop-limit orders.
+
+![C++](https://img.shields.io/badge/C%2B%2B-23-blue.svg)
+![License](https://img.shields.io/badge/license-MIT-green.svg)
+![Platform](https://img.shields.io/badge/platform-Linux%20%7C%20macOS-lightgrey.svg)
+
+## Overview
+
+This matching engine implements a complete order book with price-time priority matching, optimized for minimal latency and maximum throughput. Built for educational purposes, it demonstrates production-grade techniques used in financial exchanges and high-frequency trading systems.
+
+### Key Features
+
+- **High performance**: 5.4M–44M engine operations per second (benchmarked with Clang -O3)
+- **Complete order types**: Market, Limit, Stop, and Stop-Limit orders
+- **Lock-free design**: Lock-free ring buffer for trade reporting
+- **Custom memory management**: Arena allocator eliminates heap allocation overhead
+- **AVL tree order book**: O(log n) operations with strict balance guarantees
+- **Stop order cascades**: Handles triggered stop orders without recursion issues
+
+## Performance Benchmarks
+
+**Benchmark environment**: ARM64 architecture, 12-core CPU, 24GB RAM, Clang++ 15, -O3 optimization
+
+| Test Scenario | Throughput | Description |
+|--------------|-----------|-------------|
+| Statistical Orders | 5.44M TPS | Complex matching with all order types |
+| Order Modifications | 44.21M TPS | Mixed insert/modify/cancel operations |
+| Mixed Workload | 6.44M TPS | 75% orders, 15% cancels, 10% modifies |
+
+**Total trades executed**: 1,511,505 across 3M operations
+
+*Estimated per-operation latency (derived from throughput): ~20–200 ns depending on workload complexity.*
 
 ## Architecture
 
@@ -62,7 +95,9 @@ Tested using Clang++ with -O3 optimization:
 
 
 
-```
+
+
+```cpp
 clang++ -std=c++23 -O3 -Wall -Wextra -pthread engine.cpp -o engine
 ./engine
 ```
@@ -70,7 +105,7 @@ clang++ -std=c++23 -O3 -Wall -Wextra -pthread engine.cpp -o engine
 
 #### With GCC
 
-```
+```cpp
 g++ -std=c++23 -O3 -Wall -Wextra -pthread engine.cpp -o engine
 ./engine
 ```
@@ -78,7 +113,7 @@ g++ -std=c++23 -O3 -Wall -Wextra -pthread engine.cpp -o engine
 
 ### Usage Example
 
-```
+```cpp
 // All code is in a single file - no separate header needed
 
 // Initialize components
@@ -111,6 +146,7 @@ engine.cancelOrder(1001);
 ```
  
 
+
 ## Benchmark Details
 
 ### Test 1: Statistical Orders
@@ -121,7 +157,7 @@ Pre-seeds order book with 10,000 orders, then processes 1M orders with realistic
 - 10% stop orders
 - 10% stop-limit orders
 
-**Result**: 5.44 Million TPS
+**Result**: 5.44 Million Operations/sec
 
 ### Test 2: Order Modifications
 
@@ -130,7 +166,7 @@ Tests mixed operations common in market-making strategies:
 - 33% order modifications
 - 33% order cancellations
 
-**Result**: 44.21 Million TPS
+**Result**: 44.21 Million Operations/sec
 
 ### Test 3: Mixed Workload
 
@@ -139,7 +175,7 @@ Simulates production-like behavior:
 - 15% cancellations
 - 10% modifications
 
-**Result**: 6.44 Million TPS
+**Result**: 6.44 Million Operations/sec
 
 ## Implementation Notes
 
@@ -204,10 +240,13 @@ This is an educational project. Contributions welcome!
 
 Please ensure code follows existing style and includes appropriate comments.
 
+## License
 
+MIT License - see LICENSE file for details
 
 ---
 
 ⚠️ **Disclaimer**: This is educational software for research and learning purposes. Not intended for production trading systems. No warranty provided. Use at your own risk.
 
 **Star this repo if you find it useful!** ⭐
+
