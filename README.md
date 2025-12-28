@@ -1,35 +1,4 @@
-# High-Performance Order Matching Engine
 
-A low-latency, high-throughput order matching engine written in C++ achieving **5–44 million engine operations per second** with support for limit orders, market orders, stop orders, and stop-limit orders.
-
-![C++](https://img.shields.io/badge/C%2B%2B-23-blue.svg)
-![License](https://img.shields.io/badge/license-MIT-green.svg)
-![Platform](https://img.shields.io/badge/platform-Linux%20%7C%20macOS-lightgrey.svg)
-
-## Overview
-
-This matching engine implements a complete order book with price-time priority matching, optimized for minimal latency and maximum throughput. Built for educational purposes, it demonstrates production-grade techniques used in financial exchanges and high-frequency trading systems.
-
-### Key Features
-
-- **High performance**: 5.4M–44M engine operations per second (benchmarked with Clang -O3)
-- **Complete order types**: Market, Limit, Stop, and Stop-Limit orders
-- **Lock-free design**: Lock-free ring buffer for trade reporting
-- **Custom memory management**: Arena allocator eliminates heap allocation overhead
-- **AVL tree order book**: O(log n) operations with strict balance guarantees
-- **Stop order cascades**: Handles triggered stop orders without recursion issues
-
-## Performance Benchmarks
-
-**Benchmark environment**: Apple MacBook Pro M2, macOS 14.2, Clang++ 15, -O3
-
-| Test Scenario | Throughput | Description |
-|--------------|-----------|-------------|
-| Statistical Orders | 5.44M TPS | Complex matching with all order types |
-| Order Modifications | 44.21M TPS | Mixed insert/modify/cancel operations |
-| Mixed Workload | 6.44M TPS | 75% orders, 15% cancels, 10% modifies |
-
-**Total trades executed**: 1,511,505 across 3M operations
 # High-Performance Order Matching Engine
 
 A low-latency, high-throughput order matching engine written in C++ achieving **5–44 million engine operations per second** with support for limit orders, market orders, stop orders, and stop-limit orders.
