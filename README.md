@@ -8,7 +8,7 @@ A low-latency, high-throughput order matching engine written in C++ achieving **
 
 ## Overview
 
-This matching engine implements a complete order book with price-time priority matching, optimized for minimal latency and maximum throughput. Built for educational and research purposes, it demonstrates production-grade techniques used in financial exchanges and high-frequency trading systems.
+This matching engine implements a complete order book with price-time priority matching, optimized for minimal latency and maximum throughput. Built for educational purposes, it demonstrates production-grade techniques used in financial exchanges and high-frequency trading systems.
 
 ### Key Features
 
@@ -26,9 +26,9 @@ Tested on MacBook Pro with Apple Silicon using Clang++ with -O3 optimization:
 
 | Test Scenario | Throughput | Description |
 |--------------|-----------|-------------|
-| Statistical Orders | 5.45M TPS | Complex matching with all order types |
-| Order Modifications | 44.22M TPS | Pure modification operations |
-| Mixed Workload | 6.45M TPS | 75% orders, 15% cancels, 10% modifies |
+| Statistical Orders | 5.44M TPS | Complex matching with all order types |
+| Order Modifications | 44.21M TPS | Mixed insert/modify/cancel operations |
+| Mixed Workload | 6.44M TPS | 75% orders, 15% cancels, 10% modifies |
 
 **Total trades executed**: 1,511,505 across 3M operations
 
@@ -53,12 +53,14 @@ Tested on MacBook Pro with Apple Silicon using Clang++ with -O3 optimization:
 ### Prerequisites
 
 - C++23 compatible compiler (GCC 11+, Clang 14+, MSVC 2022+)
-- POSIX threads library
+- C++11 standard threading support
 - CMake 3.15+ (optional, for build management)
 
 ### Building
 
 #### Quick Build
+
+
 
 ```
 clang++ -std=c++23 -O3 -Wall -Wextra -pthread engine.cpp -o engine
@@ -77,10 +79,11 @@ g++ -std=c++23 -O3 -Wall -Wextra -pthread engine.cpp -o engine
 ### Usage Example
 
 ```
-#include "matching_engine.h"
+// All code is in a single file - no separate header needed
 
 // Initialize components
-MemoryManager mm(1000000);
+const int POOL_SIZE = 1000000;
+MemoryManager mm(POOL_SIZE * 3); // 3x for orders, 1/5 for limits
 RingBuffer<65536> tradeBuffer;
 OrderBook engine(mm, tradeBuffer);
 
@@ -102,15 +105,9 @@ engine.modifyOrder(1001, 150, 29550);
 
 // Cancel an order
 engine.cancelOrder(1001);
-```
- 
 
-## Code Structure
-```
-.
-├── engine.cpp # Main implementation
-├── README.md # This file
-└── LICENSE # MIT License
+
+
 ```
  
 
@@ -118,19 +115,22 @@ engine.cancelOrder(1001);
 
 ### Test 1: Statistical Orders
 
-Pre-seeds order book with 10,000 limit orders, then processes 1M orders with realistic distributions:
+Pre-seeds order book with 10,000 orders, then processes 1M orders with realistic distributions:
 - 50% limit orders
 - 30% market orders
 - 10% stop orders
 - 10% stop-limit orders
 
-**Result**: 5.45 Million TPS
+**Result**: 5.44 Million TPS
 
 ### Test 2: Order Modifications
 
-Focuses on modify/cancel operations common in market-making strategies. Tests the performance of order book updates without matching.
+Tests mixed operations common in market-making strategies:
+- 33% new order placements
+- 33% order modifications
+- 33% order cancellations
 
-**Result**: 44.22 Million TPS
+**Result**: 44.21 Million TPS
 
 ### Test 3: Mixed Workload
 
@@ -139,7 +139,7 @@ Simulates production-like behavior:
 - 15% cancellations
 - 10% modifications
 
-**Result**: 6.45 Million TPS
+**Result**: 6.44 Million TPS
 
 ## Implementation Notes
 
@@ -150,14 +150,14 @@ Stop orders are maintained in separate AVL trees and checked only once per match
 ### Memory Efficiency
 
 Pre-allocation eliminates heap fragmentation and provides predictable latency. Pool sizes are configurable based on expected order volume:
-- Orders pool: 3x test size
-- Limits pool: 0.6x test size
+- Orders pool: 3x test size (e.g., 3,000,000 for 1M test)
+- Limits pool: 0.2x test size (e.g., 200,000 for 1M test)
 
 ### Thread Safety
 
-The matching engine is single-threaded (lock-free within matching logic). Trade reporting uses a lock-free ring buffer for asynchronous consumption by a separate consumer thread.
+The matching engine is single-threaded (lock-free within matching logic). Trade reporting uses a lock-free ring buffer for asynchronous consumption by a separate consumer thread using C++11 `std::thread`.
 
-## Limitations & Future Work
+## Limitations
 
 Current limitations:
 - Single-threaded matching (parallelization requires careful design)
@@ -165,7 +165,6 @@ Current limitations:
 - No network interface (local benchmarking only)
 - Basic order validation (no credit checks, position limits)
 - No market data dissemination
-
 
 ## Technical Details
 
@@ -195,7 +194,7 @@ The order book uses AVL trees for both sides (buy/sell) to maintain sorted price
 
 ## Contributing
 
-This is an educational/research project. Contributions welcome!
+This is an educational project. Contributions welcome!
 
 1. Fork the repository
 2. Create a feature branch (`git checkout -b feature/enhancement`)
@@ -204,12 +203,6 @@ This is an educational/research project. Contributions welcome!
 5. Open a Pull Request
 
 Please ensure code follows existing style and includes appropriate comments.
-
-
-
-
-
-
 
 
 
